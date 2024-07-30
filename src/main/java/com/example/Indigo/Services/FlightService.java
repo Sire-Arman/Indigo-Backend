@@ -1,10 +1,14 @@
 package com.example.Indigo.Services;
 
 import com.example.Indigo.Models.Flight;
+import com.example.Indigo.Models.FlightUpdate;
 import com.example.Indigo.Repository.FlightRepository;
+import com.google.firebase.messaging.FirebaseMessaging;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -12,20 +16,34 @@ public class FlightService {
     @Autowired
     private FlightRepository flightRepository;
     @Autowired
-    private FCMService fcmService;
+    private MockDataService mockDataService;
 
-    public Optional<Flight> getFlightByNumber(String flightNumber) {
+
+    public Optional<Flight> getFlightStatus(String flightNumber) {
         return flightRepository.findByFlightNumber(flightNumber);
     }
+    public List<Flight> getAllFlights() {
+        return flightRepository.findAll();
+    }
 
-    public Flight updateFlightStatus(Flight flight) {
-        Flight updatedFlight = flightRepository.save(flight);
+    public List<Flight> getDelayedFlights() {
+        return flightRepository.findByStatus("Delayed");
+    }
+    public List<Flight> getOnTimeFlights() {
+        return flightRepository.findByStatus("On Time");
+    }
 
-        // Send notification if the status has changed
-        if (!updatedFlight.getStatus().equals(flight.getStatus())) {
-            fcmService.sendNotification("user_fcm_token", "Flight Status Update", "Flight " + flight.getFlightNumber() + " is now " + flight.getStatus());
-        }
+    public List<Flight> getCancelledFlights() {
+        return flightRepository.findByStatus("Cancelled");
+    }
 
-        return updatedFlight;
+    @Transactional
+    public void updateFlightStatus(FlightUpdate update) {
+        Flight flight = flightRepository.findByFlightNumber(update.getFlightNumber())
+                .orElseGet(() -> mockDataService.getFlightData(update.getFlightNumber()));
+        flight.setStatus(update.getStatus());
+        flight.setGate(update.getGate());
+
+        flightRepository.save(flight);
     }
 }

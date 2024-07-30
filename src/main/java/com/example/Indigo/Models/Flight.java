@@ -1,9 +1,6 @@
 package com.example.Indigo.Models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,11 +17,22 @@ public class Flight {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Column(nullable = false)
     private String flightNumber;
+    private LocalDateTime scheduledArrival;
+    @Column(nullable = false)
+    private String origin;
+    @Column(nullable = false)
+    private LocalDateTime scheduledDeparture;
+    @Column(nullable = false)
     private String status;
+    @Column(nullable = false)
     private String gate;
-    private LocalDateTime departureTime;
+    @Column(nullable = false)
+    private String destination;
 
-    // Getters and Setters
+
+
+
+    // Getters, setters, and constructors
 }
